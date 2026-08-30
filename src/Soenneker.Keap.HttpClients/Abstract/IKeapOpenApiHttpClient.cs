@@ -5,14 +5,14 @@ using System.Threading;
 namespace Soenneker.Keap.HttpClients.Abstract;
 
 /// <summary>
-/// A .NET thread-safe singleton HttpClient for 
+/// Provides a cached HTTP client configured for the Keap REST API.
 /// </summary>
-public interface IKeapOpenApiHttpClient: IDisposable, IAsyncDisposable
+public interface IKeapOpenApiHttpClient : IDisposable, IAsyncDisposable
 {
     /// <summary>
-    /// Returns the configured HTTP client used by the Keap OpenAPI HTTP Client.
+    /// Gets the HTTP client cached for this provider's lifetime.
     /// </summary>
-    /// <param name="cancellationToken">Token used to cancel the operation.</param>
-    /// <returns>A task whose result is the requested HTTP client.</returns>
+    /// <param name="cancellationToken">Stops client creation if the cached instance has not been created yet.</param>
+    /// <returns>The client configured with Keap's base address and authorization header.</returns>
     ValueTask<HttpClient> Get(CancellationToken cancellationToken = default);
 }

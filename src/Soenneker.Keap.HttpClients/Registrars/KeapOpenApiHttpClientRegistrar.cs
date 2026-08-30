@@ -30,7 +30,7 @@ public static class KeapOpenApiHttpClientRegistrar
     /// <returns>The same service collection, so additional registrations can be chained.</returns>
     public static IServiceCollection AddKeapOpenApiHttpClientAsScoped(this IServiceCollection services)
     {
-        services.AddHttpClientCacheAsSingleton()
+        services.AddHttpClientCacheAsScoped()
                 .TryAddScoped<IKeapOpenApiHttpClient, KeapOpenApiHttpClient>();
 
         return services;

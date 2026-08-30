@@ -1,10 +1,12 @@
 [![](https://img.shields.io/nuget/v/soenneker.keap.httpclients.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.keap.httpclients/)
+[![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.keap.httpclients/build-and-test.yml?style=for-the-badge)](https://github.com/soenneker/soenneker.keap.httpclients/actions/workflows/build-and-test.yml)
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.keap.httpclients/publish-package.yml?style=for-the-badge)](https://github.com/soenneker/soenneker.keap.httpclients/actions/workflows/publish-package.yml)
 [![](https://img.shields.io/nuget/dt/soenneker.keap.httpclients.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.keap.httpclients/)
+[![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.keap.httpclients/codeql.yml?label=CodeQL&style=for-the-badge)](https://github.com/soenneker/soenneker.keap.httpclients/actions/workflows/codeql.yml)
 
 # Soenneker.Keap.HttpClients
 
-A .NET thread-safe singleton HttpClient for.
+Provides a cached `HttpClient` configured for Keap's REST API and OAuth access token.
 
 ## Install
 
@@ -12,32 +14,39 @@ A .NET thread-safe singleton HttpClient for.
 dotnet add package Soenneker.Keap.HttpClients
 ```
 
-## Quick start
+## Configuration
 
-```csharp
-using Soenneker.Keap.HttpClients.Registrars;
-using Microsoft.Extensions.DependencyInjection;
-
-var services = new ServiceCollection();
-var result = services.AddKeapOpenApiHttpClientAsSingleton();
+```json
+{
+  "Keap": {
+    "AccessToken": "<OAuth access token>"
+  }
+}
 ```
 
-Adds `KeapOpenApiHttpClient` as a singleton service.
+`AccessToken` is required. The default base address is `https://api.infusionsoft.com/crm`, and the token is sent as `Authorization: Bearer {token}`.
 
-## What you get
+For another environment or authentication gateway, set `Keap:ClientBaseUrl`, `Keap:AuthHeaderName`, or `Keap:AuthHeaderValueTemplate`. The value template must contain `{token}` where the configured access token belongs.
 
-- `IKeapOpenApiHttpClient` — A .NET thread-safe singleton HttpClient for.
-- `KeapOpenApiHttpClientRegistrar` — Registers the OpenAPI HttpClient wrapper for dependency injection.
+## Register and use
 
-## API at a glance
+```csharp
+using Soenneker.Keap.HttpClients.Abstract;
+using Soenneker.Keap.HttpClients.Registrars;
 
-| API | What it does | Result / important behavior |
-| --- | --- | --- |
-| `KeapOpenApiHttpClientRegistrar.AddKeapOpenApiHttpClientAsSingleton(services)` | Adds `KeapOpenApiHttpClient` as a singleton service. | The same service collection, so additional registrations can be chained. |
-| `KeapOpenApiHttpClientRegistrar.AddKeapOpenApiHttpClientAsScoped(services)` | Adds `KeapOpenApiHttpClient` as a scoped service. | The same service collection, so additional registrations can be chained. |
+services.AddKeapOpenApiHttpClientAsSingleton();
 
-## Practical notes
+IKeapOpenApiHttpClient provider =
+    serviceProvider.GetRequiredService<IKeapOpenApiHttpClient>();
 
-- Reuse the registered client instead of constructing one per operation.
-- Calls that return a cached or singleton value reuse the same instance until the owning service is disposed.
-- Dispose instances you own when their scope ends so held resources can be released.
+HttpClient client = await provider.Get(cancellationToken);
+using HttpResponseMessage response = await client.GetAsync(
+    "v2/contacts",
+    cancellationToken);
+
+response.EnsureSuccessStatusCode();
+```
+
+`Get()` creates the client on first use and reuses it for the provider's lifetime. Configuration is applied during that first creation; replace the provider to pick up changed credentials or endpoints.
+
+`AddKeapOpenApiHttpClientAsScoped()` creates an independent cache and client for each dependency-injection scope. Disposing one scope cannot remove another scope's client. Let the container dispose the provider, and do not dispose the returned cached `HttpClient` directly.
