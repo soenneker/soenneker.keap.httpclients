@@ -11,6 +11,7 @@ using Soenneker.Utils.HttpClientCache.Abstract;
 
 namespace Soenneker.Keap.HttpClients;
 
+/// <inheritdoc cref="IKeapOpenApiHttpClient" />
 public sealed class KeapOpenApiHttpClient : IKeapOpenApiHttpClient
 {
     private readonly IHttpClientCache _httpClientCache;
