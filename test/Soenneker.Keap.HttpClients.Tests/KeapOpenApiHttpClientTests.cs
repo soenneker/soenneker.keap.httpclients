@@ -5,6 +5,7 @@ using Soenneker.Keap.HttpClients.Abstract;
 using Soenneker.Keap.HttpClients.Registrars;
 using Soenneker.Tests.HostedUnit;
 using Soenneker.Utils.HttpClientCache.Abstract;
+using System.Threading;
 
 namespace Soenneker.Keap.HttpClients.Tests;
 
@@ -25,7 +26,7 @@ public sealed class KeapOpenApiHttpClientTests : HostedUnitTest
     }
 
     [Test]
-    public async ValueTask Scoped_client_uses_scoped_cache()
+    public async ValueTask Scoped_client_uses_scoped_cache(CancellationToken cancellationToken)
     {
         var services = new ServiceCollection();
 
@@ -39,7 +40,7 @@ public sealed class KeapOpenApiHttpClientTests : HostedUnitTest
     }
 
     [Test]
-    public async ValueTask Singleton_client_uses_singleton_cache()
+    public async ValueTask Singleton_client_uses_singleton_cache(CancellationToken cancellationToken)
     {
         var services = new ServiceCollection();
 
