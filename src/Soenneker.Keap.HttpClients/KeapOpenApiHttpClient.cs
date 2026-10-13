@@ -29,7 +29,7 @@ public sealed class KeapOpenApiHttpClient : IKeapOpenApiHttpClient
     {
         return _httpClientCache.Get(nameof(KeapOpenApiHttpClient), (config: _config, baseUrl: _config["Keap:ClientBaseUrl"] ?? _prodBaseUrl), static state =>
         {
-            var apiKey = state.config.GetValueStrict<string>("Keap:AccessToken");
+            var apiKey = state.config.GetStringStrict("Keap:AccessToken");
             string authHeaderName = state.config["Keap:AuthHeaderName"] ?? "Authorization";
             string authHeaderValueTemplate = state.config["Keap:AuthHeaderValueTemplate"] ?? "Bearer {token}";
             string authHeaderValue = authHeaderValueTemplate.Replace("{token}", apiKey, StringComparison.Ordinal);
